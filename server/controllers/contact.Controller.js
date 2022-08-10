@@ -1,5 +1,5 @@
 const url = require("url");
-const Contact = require("./../models/contactModel");
+const Contact = require("./../models/contact.Model");
 const multer = require("multer");
 const filterUpdateData = require("./../utils/filterUpdateData");
 const AppError = require("./../utils/AppError");
