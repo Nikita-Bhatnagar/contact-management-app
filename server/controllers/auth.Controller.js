@@ -23,15 +23,17 @@ const createSendToken = (statusCode, newUser, res) => {
   newUser.__v = undefined;
 
   const userObj = Object.assign({ token: token }, newUser._doc);
+  console.log(userObj);
   res.cookie("jwt", token, cookieOptions);
   res.status(statusCode).json({
     status: "success",
-    user: userObj,
+    data: userObj,
   });
 };
 
 exports.signup = async (req, res, next) => {
   try {
+    console.log(req);
     const newUser = await User.create({
       user_name: req.body.user_name,
       email: req.body.email,
@@ -55,7 +57,7 @@ exports.login = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user || !(await user.correctPassword(password, user.password))) {
-      return next(new AppError("invalid email id or password", 401));
+      return next(new AppError("Invalid email id or password", 401));
     }
 
     createSendToken(200, user, res);
@@ -67,11 +69,14 @@ exports.login = async (req, res, next) => {
 exports.protect = async (req, res, next) => {
   try {
     let token;
+    //console.log(req.headers.authorization);
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
+      // console.log(token);
+      //token = token.substring(1, token.length - 1);
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.id);
       if (!user)
@@ -99,16 +104,17 @@ exports.forgotPassword = async (req, res, next) => {
   const resetToken = user.createResetToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `Forgot password? Send a patch request with your new password to the url: ${resetUrl}.`;
+  // const resetUrl = `${req.protocol}://${req.get(
+  //   "host"
+  // )}/api/v1/users/resetPassword/${resetToken}`;
 
+  const resetUrl = `${req.protocol}://127.0.0.1:3000/password_resets/${resetToken}`;
+  //const message = `Forgot password? Send a patch request with your new password to the url: ${resetUrl}.`;
   try {
     await sendEmail({
       email: user.email,
       subject: "Your password reset token (valid for 10 min)",
-      message,
+      payload: { link: resetUrl },
     });
 
     res.status(200).json({

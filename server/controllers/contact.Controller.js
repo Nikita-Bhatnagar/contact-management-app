@@ -65,6 +65,7 @@ exports.deleteContact = async (req, res, next) => {
 
 exports.getContacts = async (req, res, next) => {
   try {
+    console.log(req.url);
     const { query } = url.parse(req.url, true);
     const fields = ["city", "state", "country", "contact_name"];
     const unsupportedFields = [
@@ -86,12 +87,15 @@ exports.getContacts = async (req, res, next) => {
       }
     }
 
+    const queryObj = {};
     for (let key in query) {
       if (fields.includes(key)) {
         query[key].replace("+", " ");
+        queryObj[key] = { $regex: query[key], $options: "i" };
       }
     }
-    const getQuery = Contact.find({ user: req.user._id, ...query });
+    console.log(queryObj);
+    const getQuery = Contact.find({ user: req.user._id, ...queryObj });
     const contacts = await getQuery.select("-__v");
     res.status(200).json({
       status: "success",

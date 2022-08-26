@@ -13,6 +13,17 @@ mongoose
   .connect(DB, {
     useNewUrlParser: true,
   })
-  .then(() => {});
+  .then(() => {
+    console.log("DB connection successful");
+  });
 
-const server = app.listen(port, () => {});
+const server = app.listen(port, () => {
+  console.log(`app listening on port ${port}`);
+});
+process.on("unhandledRejection", (err) => {
+  console.log("umhandled rejection, shutting down");
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+  });
+});

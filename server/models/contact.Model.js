@@ -14,9 +14,13 @@ const contactSchema = new mongoose.Schema({
       `Please provide a valid email address`,
     ],
   },
-  phone_number: {
-    type: [String],
+  phone_number_1: {
+    type: Number,
     required: [true, "contact must have a phone number"],
+    validate: [validatePhoneNumber, "Invalid length phone number"],
+  },
+  phone_number_2: {
+    type: Number,
     validate: [validatePhoneNumber, "Invalid length phone number"],
   },
   address: {
@@ -47,6 +51,7 @@ const contactSchema = new mongoose.Schema({
 });
 
 function validatePhoneNumber(arr) {
+  if (!arr) return true;
   for (let i = 0; i < arr.length; i++) {
     if (arr[i].length < 10 || arr[i].length > 12) return false;
   }
